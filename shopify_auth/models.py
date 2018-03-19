@@ -26,17 +26,31 @@ class ShopUserManager(BaseUserManager):
         """
         Creates and saves a ShopUser with the given domains and password.
         """
-        return self.create_user(myshopify_domain, password)
+        user = self.create_user(myshopify_domain, password)
+        user.is_superuser = True
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
 
 
 @python_2_unicode_compatible
 class AbstractShopUser(AbstractBaseUser):
     myshopify_domain = models.CharField(max_length=255, unique=True, editable=False)
     token = models.CharField(max_length=32, editable=False, default='00000000000000000000000000000000')
-
+    is_superuser = models.BooleanField(default=False)
     objects = ShopUserManager()
 
     USERNAME_FIELD = 'myshopify_domain'
+
+    @property
+    def is_staff(self):
+        return self.is_superuser
+
+    def has_perm(self, perm, obj=None):
+        return self.is_superuser
+
+    def has_module_perms(self, app_label):
+        return self.is_superuser
 
     @property
     def session(self):

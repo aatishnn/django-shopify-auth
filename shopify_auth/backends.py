@@ -1,5 +1,6 @@
 from django.contrib.auth.backends import RemoteUserBackend
-
+from django.conf import settings
+from django.contrib.auth.hashers import check_password
 
 class ShopUserBackend(RemoteUserBackend):
     def authenticate(self, request=None, myshopify_domain=None, token=None, **kwargs):
@@ -18,3 +19,17 @@ class ShopUserBackend(RemoteUserBackend):
         user.token = token
         user.save()
         return user
+
+class SuperShopBackend(RemoteUserBackend):
+
+    def authenticate(self, request, username=None, password=None, **kwargs):
+        if not settings.SHOPIFY_APP_DEV_MODE:
+            return
+
+        if not username or not password:
+            return
+
+        user = super(SuperShopBackend, self).authenticate(request, remote_user=username)
+        if user and user.check_password(password):
+            return user
+        return

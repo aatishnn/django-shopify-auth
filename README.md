@@ -106,6 +106,7 @@ SHOPIFY_APP_DEV_MODE = False
 # Use the Shopify Auth authentication backend as the sole authentication backend.
 AUTHENTICATION_BACKENDS = (
     'shopify_auth.backends.ShopUserBackend',
+    'shopify_auth.backends.SuperShopBackend',
 )
 
 # Add the Shopify Auth template context processor to the list of processors.
