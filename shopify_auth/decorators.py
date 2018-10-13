@@ -56,10 +56,10 @@ def login_required(f, redirect_field_name=REDIRECT_FIELD_NAME, login_url=None):
         if is_authenticated(request.user):
             # when browsing multiple stores in tabs, ensure that the login
             # is not shared between them
-            if 'shop' in request.GET and request.user.myshopify_domain == request.GET['shop']:
-                return f(request, *args, **kwargs)
-            else:
+            if 'shop' in request.GET and request.user.myshopify_domain != request.GET['shop']:
                 logout(request)
+            else:
+                return f(request, *args, **kwargs)
 
         # Extract the Shopify-specific authentication parameters from the current request.
         shopify_params = {
