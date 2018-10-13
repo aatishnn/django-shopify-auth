@@ -4,7 +4,7 @@ from functools import wraps
 from django import VERSION as DJANGO_VERSION
 from django.contrib.auth.decorators import user_passes_test
 from django.conf import settings
-from django.contrib.auth import REDIRECT_FIELD_NAME
+from django.contrib.auth import logout, REDIRECT_FIELD_NAME
 from django.utils.encoding import force_str
 from django.shortcuts import resolve_url
 from django.contrib.auth.decorators import login_required as django_login_required
@@ -54,7 +54,12 @@ def login_required(f, redirect_field_name=REDIRECT_FIELD_NAME, login_url=None):
     @wraps(f)
     def wrapper(request, *args, **kwargs):
         if is_authenticated(request.user):
-            return f(request, *args, **kwargs)
+            # when browsing multiple stores in tabs, ensure that the login
+            # is not shared between them
+            if 'shop' in request.GET and request.user.myshopify_domain == request.GET['shop']:
+                return f(request, *args, **kwargs)
+            else:
+                logout(request)
 
         # Extract the Shopify-specific authentication parameters from the current request.
         shopify_params = {
